@@ -4,18 +4,17 @@ CREATE TABLE users (
                        certhash varchar(128) NOT NULL UNIQUE
 );
 
-CREATE TYPE feed_kind AS ENUM ('rss', 'gemini');
+CREATE TYPE feed_kind AS ENUM ('gemini');
 
 CREATE TYPE payment_type AS ENUM ('monero');
 
 CREATE TABLE authors (
                          id serial PRIMARY KEY,
+                         name varchar,
                          created timestamp NOT NULL,
                          updated timestamp NOT NULL,
-                         kind feed_kind NOT NULL,
-                         url varchar UNIQUE,
-                         title varchar,
-                         description varchar
+                         url varchar,
+                         email varchar
 );
 
 CREATE TABLE accepted_payments (
@@ -38,7 +37,7 @@ CREATE TABLE feeds (
                        description varchar,
 );
 
-CREATE TABLE articles (
+CREATE TABLE entries (
                           id serial PRIMARY KEY,
                           title varchar NOT NULL,
                           published timestamp NOT NULL,
