@@ -31,7 +31,7 @@ func configureRoutes() *gemini.ServeMux {
 
 	mux.HandleFunc("/earn", func(ctx context.Context, w gemini.ResponseWriter, r *gemini.Request) {
 		w.WriteHeader(20, "text/gemini")
-		err := aboutPage.Execute(w, nil)
+		err := earnPage.Execute(w, nil)
 		if err != nil {
 			panic(err)
 		}
