@@ -5,7 +5,7 @@ Gemmit is a social news aggregation and web content rating website for the gemin
 Gemmit seeks not to build a walled garden, but to leverage existing web protocols that respect security through decentralization and privacy.
 
 Feeds are ranked via votes published on Monero and other public blockchains.
-Votes for the sake of gemmit are defined as: any incoming transaction to a blockchain address that has been associated with an atom feeds' or entrys' respective author(s)
+Votes for the sake of gemmit are defined as: any incoming transaction to a blockchain address that has been associated with an atom feeds' or entries' respective author(s)
 
 This approach has several benefits.
 * immutability: votes can not be taken back
