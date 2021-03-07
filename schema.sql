@@ -31,11 +31,11 @@ CREATE TABLE feeds (
                        id serial PRIMARY KEY,
                        created timestamp NOT NULL,
                        updated timestamp NOT NULL,
+                       author_id INTEGER NOT NULL references authors(id),
                        kind feed_kind NOT NULL,
                        url varchar UNIQUE,
                        title varchar,
                        description varchar,
-                       author_id INTEGER NOT NULL references authors(id)
 );
 
 CREATE TABLE articles (
@@ -47,13 +47,6 @@ CREATE TABLE articles (
                           UNIQUE (url, feed_id)
 );
 
-CREATE TABLE payment_options (
-                          id serial PRIMARY KEY,
-                          pay_type payment_type NOT NULL,
-                          address varchar NOT NULL,
-                          article_id INTEGER NOT NULL references articles(id)
-)
-
 CREATE TABLE payments (
                                  id serial PRIMARY KEY,
                                  pay_type payment_type NOT NULL,
@@ -61,5 +54,5 @@ CREATE TABLE payments (
                                  tx_id varchar NOT NULL,
                                  tx_date timestamp NOT NULL,
                                  amount decimal NOT NULL,
-                                 article_id INTEGER NOT NULL references articles(id)
+                                 author_id INTEGER NOT NULL references authors(id)
 )
