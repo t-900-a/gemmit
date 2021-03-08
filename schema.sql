@@ -55,3 +55,10 @@ CREATE TABLE payments (
                                  amount decimal NOT NULL,
                                  author_id INTEGER NOT NULL references authors(id)
 )
+
+CREATE TABLE submissions (
+                               id serial PRIMARY KEY,
+                               user_id INTEGER NOT NULL references users(id),
+                               feed_id INTEGER NOT NULL references feeds(id),
+                               UNIQUE (user_id, feed_id)
+);

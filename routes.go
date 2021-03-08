@@ -21,6 +21,101 @@ import (
 func configureRoutes() *gemini.ServeMux {
 	mux := &gemini.ServeMux{}
 
+	mux.HandleFunc("/add", func(ctx context.Context, w gemini.ResponseWriter, r *gemini.Request) {
+		user := User(ctx)
+		if r.URL.RawQuery == "" {
+			w.WriteHeader(10, "Enter a feed URL")
+			return
+		}
+
+		query, err := url.QueryUnescape(r.URL.RawQuery)
+		if err != nil {
+			w.WriteHeader(10, err.Error() + ": Try again")
+			return
+		}
+		feedURL, err := url.Parse(query)
+		if err != nil {
+			w.WriteHeader(10, err.Error() + ": Try again")
+			return
+		}
+
+		if feedURL.Scheme == "gemini" {
+			w.WriteHeader(10, err.Error() + ": Only gemini protocol supported")
+			return
+		}
+
+		feed, kind, err := feeds.fetchGemini(ctx, feedURL)
+		if err != nil {
+			w.WriteHeader(10, err.Error() + ": Try again")
+			return
+		}
+
+		conn, err := feeds.ForContext(ctx)
+		if err != nil {
+			panic(err)
+		}
+
+		if err := conn.Raw(func(driverConn interface{}) error {
+			conn := driverConn.(*stdlib.Conn).Conn()
+			tx, err := conn.Begin(ctx)
+			if err != nil {
+				return err
+			}
+
+			defer func() {
+				if err := recover(); err != nil {
+					tx.Rollback(ctx)
+					panic(err)
+				}
+			}()
+// TODO insert author, dependent on https://github.com/SlyMarbo/rss/issues/75
+			if err := func() error {
+				var id int
+				row := tx.QueryRow(ctx, `
+					INSERT INTO feeds (
+						created, updated, url, kind, title, description
+					) VALUES (
+						NOW() at time zone 'utc',
+						NOW() at time zone 'utc',
+						$1, $2, $3, $4
+					)
+					ON CONFLICT ON CONSTRAINT feeds_url_key
+					DO UPDATE SET
+						(updated, title, description) =
+						(EXCLUDED.updated, EXCLUDED.title, EXCLUDED.description)
+					RETURNING id;
+				`, feedURL.String(), kind, feed.Title, feed.Description)
+				if err := row.Scan(&id); err != nil {
+					return err
+				}
+
+				if _, err := tx.Exec(ctx, `
+					INSERT INTO submissions (
+						user_id, feed_id
+					) VALUES ($1, $2)
+					ON CONFLICT ON CONSTRAINT subscriptions_user_id_feed_id_key
+					DO NOTHING;
+				`, user.ID, id); err != nil {
+					return err
+				}
+
+				return feeds.Index(ctx, tx, feed.Items, id)
+			}(); err != nil {
+				tx.Rollback(ctx)
+				return err
+			}
+
+			tx.Commit(ctx)
+			return nil
+		}); err != nil {
+			log.Println(err)
+			w.WriteHeader(40, "Internal server error")
+			return
+		}
+
+		w.WriteHeader(30, "/")
+	})
+
 	mux.HandleFunc("/about", func(ctx context.Context, w gemini.ResponseWriter, r *gemini.Request) {
 		w.WriteHeader(20, "text/gemini")
 		err := aboutPage.Execute(w, nil)
