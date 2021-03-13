@@ -74,7 +74,7 @@ func configureRoutes() *gemini.ServeMux {
 
 		w.WriteHeader(20, "text/gemini")
 		err := dashboardPage.Execute(w, &DashboardPage{
-			Entries: entries,
+			Feeds: top_feeds,
 		})
 		if err != nil {
 			panic(err)
@@ -104,7 +104,7 @@ func configureRoutes() *gemini.ServeMux {
 			return
 		}
 
-		feed, kind, err := feeds.fetchGemini(ctx, feedURL)
+		feed, kind, err := feeds.Fetch(ctx, feedURL)
 		if err != nil {
 			w.WriteHeader(10, err.Error()+": Try again")
 			return
