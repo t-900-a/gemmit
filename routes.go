@@ -101,11 +101,6 @@ func configureRoutes() *gemini.ServeMux {
 			return
 		}
 
-		if feedURL.Scheme == "gemini" {
-			w.WriteHeader(10, err.Error()+": Only gemini protocol supported")
-			return
-		}
-
 		feed, kind, err := feeds.Fetch(ctx, feedURL)
 		if err != nil {
 			w.WriteHeader(10, err.Error()+": Try again")
