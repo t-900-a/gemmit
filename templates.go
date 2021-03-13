@@ -33,6 +33,7 @@ type Author struct {
 
 type DashboardPage struct {
 	Feeds []*Feed
+	Logo  string
 }
 
 var dashboardPage = template.Must(template.
@@ -42,12 +43,8 @@ var dashboardPage = template.Must(template.
 			return date.Format("Monday, January 2 2006")
 		},
 	}).
-	Parse(`  .     '     ,
-    __G͟E͟M͟M͟I͟T͟__
- _ /_|_____|_\ _
-   '. \   / .'
-     '.\ /.'
-       '.'
+	Parse(`{{.Logo}}
+
 => /about About gemmit: the front page of gemini
 => /add Add a new feed
 => /earn How to earn
@@ -68,16 +65,12 @@ Curated by {{.Author}} on {{.Updated | date}}
 type WelcomePage struct {
 	Cert *x509.Certificate
 	Hash string
+	Logo string
 }
 
 var welcomePage = template.Must(template.
 	New("welcome").
-	Parse(`  .     '     ,
-    __G͟E͟M͟M͟I͟T͟__
- _ /_|_____|_\ _
-   '. \   / .'
-     '.\ /.'
-       '.'
+	Parse(`{{.Logo}}
 
 Welcome to gemmit! We have registered your account automatically using your
 client certificate.
@@ -97,14 +90,13 @@ Let's start by adding some feeds. You can add your own feed or any other hidden 
 => /add Add feed
 `))
 
+type AboutPage struct {
+	Logo string
+}
+
 var aboutPage = template.Must(template.
 	New("about").
-	Parse(`  .     '     ,
-    __G͟E͟M͟M͟I͟T͟__
- _ /_|_____|_\ _
-   '. \   / .'
-     '.\ /.'
-       '.'
+	Parse(`{{.Logo}}
 
 Gemmit is a social news aggregation and web content rating website for the gemini protocol. It enables discovery of highly rated Gemini feeds.
 
@@ -129,14 +121,13 @@ Gemmit is open source:
 => / Back to the Feeds
 `))
 
+type EarnPage struct {
+	Logo string
+}
+
 var earnPage = template.Must(template.
 	New("Earn").
-	Parse(`  .     '     ,
-    __G͟E͟M͟M͟I͟T͟__
- _ /_|_____|_\ _
-   '. \   / .'
-     '.\ /.'
-       '.'
+	Parse(`{{.Logo}}
 
 Gemmit ranks feeds by their popularity. Popularity is measured by how much each feed author earns.
 As a feed author your subscribers will reward you with micropayments that will increase your ranking on Gemmit.
@@ -161,3 +152,5 @@ As a feed author your subscribers will reward you with micropayments that will i
 
 => / Back to the Feeds
 `))
+
+var gemmitLogo = "  .     '     ,\n    __G͟E͟M͟M͟I͟T͟__\n _ /_|_____|_\\ _\n   '. \\   / .'\n     '.\\ /.'\n       '.'"

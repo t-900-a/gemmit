@@ -29,6 +29,7 @@ func configureRoutes() *gemini.ServeMux {
 			err := welcomePage.Execute(w, &WelcomePage{
 				Cert: user.Certificate,
 				Hash: user.Hash,
+				Logo: gemmitLogo,
 			})
 			if err != nil {
 				panic(err)
@@ -75,6 +76,7 @@ func configureRoutes() *gemini.ServeMux {
 		w.WriteHeader(20, "text/gemini")
 		err := dashboardPage.Execute(w, &DashboardPage{
 			Feeds: top_feeds,
+			Logo:  gemmitLogo,
 		})
 		if err != nil {
 			panic(err)
@@ -178,7 +180,9 @@ func configureRoutes() *gemini.ServeMux {
 
 	mux.HandleFunc("/about", func(ctx context.Context, w gemini.ResponseWriter, r *gemini.Request) {
 		w.WriteHeader(20, "text/gemini")
-		err := aboutPage.Execute(w, nil)
+		err := aboutPage.Execute(w, &AboutPage{
+			Logo: gemmitLogo,
+		})
 		if err != nil {
 			panic(err)
 		}
@@ -186,7 +190,9 @@ func configureRoutes() *gemini.ServeMux {
 
 	mux.HandleFunc("/earn", func(ctx context.Context, w gemini.ResponseWriter, r *gemini.Request) {
 		w.WriteHeader(20, "text/gemini")
-		err := earnPage.Execute(w, nil)
+		err := earnPage.Execute(w, &EarnPage{
+			Logo: gemmitLogo,
+		})
 		if err != nil {
 			panic(err)
 		}
