@@ -1,0 +1,27 @@
+{
+  "name": "webart2gem",
+  "version": "1.0.0",
+  "description": "Converts web articles to Gemtext",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/git.sr.ht/~sircmpwn/webart2gem.git"
+  },
+  "author": "T-900",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/t-900-a/gemmit/issues"
+  },
+  "homepage": "https://github.com/t-900-a/gemmit",
+  "dependencies": {
+    "@mozilla/readability": "^0.3.0",
+    "collapse-white-space": "^1.0.6",
+    "html-entities": "^1.3.1",
+    "jsdom": "^16.4.0",
+    "node-fetch": "^2.6.1",
+    "sanitize-html": "^2.1.2"
+  }
+}
