@@ -36,7 +36,7 @@ func configureRoutes() *gemini.ServeMux {
 			return
 		}
 
-		var feeds []*Feed
+		var top_feeds []*Feed
 		if err := feeds.WithTx(ctx, &sql.TxOptions{
 			Isolation: 0,
 			ReadOnly:  true,
@@ -62,7 +62,7 @@ func configureRoutes() *gemini.ServeMux {
 					&feed.Author, &feed.Updated, &feed.VoteCnt, &feed.VoteAmt); err != nil {
 					return err
 				}
-				feeds = append(feeds, feed)
+				top_feeds = append(top_feeds, feed)
 			}
 
 			return nil
