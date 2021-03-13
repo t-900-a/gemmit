@@ -23,6 +23,7 @@ CREATE TABLE accepted_payments (
                                    pay_type payment_type NOT NULL,
                                    view_key varchar UNIQUE,
                                    address varchar UNIQUE,
+                                   registered BOOLEAN NOT NULL,
                                    UNIQUE (author_id, id)
 );
 

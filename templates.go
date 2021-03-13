@@ -1,12 +1,9 @@
 package main
 
-package main
-
 import (
-"crypto/x509"
-"strings"
-"text/template"
-"time"
+	"crypto/x509"
+	"text/template"
+	"time"
 )
 
 type Entry struct {
@@ -18,19 +15,20 @@ type Entry struct {
 }
 
 type Feed struct {
-	ID          int
 	Title       string
 	Description string
 	URL         string
-	Author		string
-	Updated time.Time
+	Author      string
+	Updated     time.Time
+	VoteCnt     int
+	VoteAmt     int
 }
 
 type Author struct {
-	ID          int
-	Name       string
-	URL         string
-	Email		string
+	ID    int
+	Name  string
+	URL   string
+	Email string
 }
 
 type DashboardPage struct {
@@ -55,10 +53,11 @@ var dashboardPage = template.Must(template.
 => /earn How to earn
 
 {{- if .Feeds }}
-## Top Feeds Today
+## Top 10 Feeds of all time
 {{range .Feeds}}
-=> {{.URL}} {{.Title}}
-Curated by {{.Author}} on {{.Published | date}}
+=> {{.URL}} {{.Title}} - {{.Description}}
+^ {{.VoteCnt}} ^ | ɱ {{.VoteAmt}} ɱ
+Curated by {{.Author}} on {{.Updated | date}}
 {{end}}
 {{end}}
 
