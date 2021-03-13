@@ -153,4 +153,4 @@ As a feed author your subscribers will reward you with micropayments that will i
 => / Back to the Feeds
 `))
 
-var gemmitLogo = "  .     '     ,\n    __G͟E͟M͟M͟I͟T͟__\n _ /_|_____|_\\ _\n   '. \\   / .'\n     '.\\ /.'\n       '.'"
+var gemmitLogo = ".\u0020\u0020\u0020\u0020\u0020'\u0020\u0020\u0020\u0020\u0020,\n\u0020\u0020__G͟E͟M͟M͟I͟T͟__\n_\u0020/_|_____|_\\\u0020_\n\u0020\u0020'.\u0020\\\u0020\u0020\u0020/\u0020.'\n\u0020\u0020\u0020\u0020'.\\\u0020/.'\n\u0020\u0020\u0020\u0020\u0020\u0020'.'\n"
