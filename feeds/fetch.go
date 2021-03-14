@@ -143,7 +143,7 @@ func Fetch(ctx context.Context, url *url.URL) (*rss.Feed, string, error) {
 func Index(ctx context.Context, tx pgx.Tx,
 	items []*rss.Item, feedId int) error {
 	_, err := tx.Exec(ctx,
-		`CREATE TEMP TABLE IF NOT EXISTS articles_temp (
+		`CREATE TEMP TABLE IF NOT EXISTS entries_temp (
 			title varchar,
 			published timestamp,
 			url varchar,
@@ -161,7 +161,7 @@ func Index(ctx context.Context, tx pgx.Tx,
 	}
 
 	_, err = tx.CopyFrom(ctx,
-		pgx.Identifier{"articles_temp"},
+		pgx.Identifier{"entries_temp"},
 		[]string{"title", "published", "url", "feed_id"},
 		pgx.CopyFromRows(rows),
 	)
@@ -170,10 +170,10 @@ func Index(ctx context.Context, tx pgx.Tx,
 	}
 
 	result, err := tx.Exec(ctx, `
-		INSERT INTO articles
+		INSERT INTO entries
 		(title, published, url, feed_id)
 		SELECT title, published, url, feed_id
-		FROM articles_temp
+		FROM entries_temp
 		ON CONFLICT DO NOTHING;
 	`)
 	if err != nil {

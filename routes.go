@@ -129,19 +129,33 @@ func configureRoutes() *gemini.ServeMux {
 			if err := func() error {
 				var id int
 				row := tx.QueryRow(ctx, `
+					INSERT INTO authors (
+						name, created, updated
+					) VALUES (
+						$1,
+						NOW() at time zone 'utc',
+						NOW() at time zone 'utc'
+					)
+					RETURNING id;
+				`, feed.Author)
+				if err := row.Scan(&id); err != nil {
+					return err
+				}
+
+				row = tx.QueryRow(ctx, `
 					INSERT INTO feeds (
-						created, updated, url, kind, title, description
+						created, updated, author_id, kind, url,  title, description
 					) VALUES (
 						NOW() at time zone 'utc',
 						NOW() at time zone 'utc',
-						$1, $2, $3, $4
+						$1, $2, $3, $4, $5
 					)
 					ON CONFLICT ON CONSTRAINT feeds_url_key
 					DO UPDATE SET
 						(updated, title, description) =
 						(EXCLUDED.updated, EXCLUDED.title, EXCLUDED.description)
 					RETURNING id;
-				`, feedURL.String(), kind, feed.Title, feed.Description)
+				`, id, kind, feedURL.String(), feed.Title, feed.Description)
 				if err := row.Scan(&id); err != nil {
 					return err
 				}
@@ -150,7 +164,7 @@ func configureRoutes() *gemini.ServeMux {
 					INSERT INTO submissions (
 						user_id, feed_id
 					) VALUES ($1, $2)
-					ON CONFLICT ON CONSTRAINT subscriptions_user_id_feed_id_key
+					ON CONFLICT ON CONSTRAINT submissions_user_id_feed_id_key
 					DO NOTHING;
 				`, user.ID, id); err != nil {
 					return err
