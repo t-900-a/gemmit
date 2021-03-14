@@ -4,17 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-
-	//"fmt"
-	//"io"
 	"log"
-	//"mime"
 	"net/url"
-	//"os/exec"
-	//"sort"
-	//"strconv"
-	//"strings"
-	//"time"
+	"regexp"
 
 	"github.com/t-900-a/gemmit/feeds"
 
@@ -92,7 +84,6 @@ func configureRoutes() *gemini.ServeMux {
 			w.WriteHeader(10, "Enter a feed URL")
 			return
 		}
-
 		query, err := url.QueryUnescape(r.URL.RawQuery)
 		if err != nil {
 			w.WriteHeader(10, err.Error()+": Try again")
@@ -110,12 +101,16 @@ func configureRoutes() *gemini.ServeMux {
 			return
 		}
 
-		if feed.Author.Extension.Rel != "payment" {
-			w.WriteHeader(10, "author payment data malformed")
-			return
+		if len(feed.Author.Extensions) > 0 {
+			for _, ext := range feed.Author.Extensions {
+				if ext.Rel != "payment" {
+					w.WriteHeader(10, "Author's payment data within feed is malformed")
+					return
+				}
+			}
+		} else {
+			w.WriteHeader(10, "No accepted Payments found within feed")
 		}
-
-
 
 		conn, err := feeds.ForContext(ctx)
 		if err != nil {
@@ -158,7 +153,6 @@ func configureRoutes() *gemini.ServeMux {
 				log.Println(feed.URL)
 				duplicates = append(duplicates, feed)
 			}
-			log.Println(len(duplicates))
 			if len(duplicates) > 0 {
 				return errors.New("Feed already exists")
 			}
@@ -166,6 +160,7 @@ func configureRoutes() *gemini.ServeMux {
 			// TODO Author validate strings
 			if err := func() error {
 				var id int
+				// feed must include an author, insert author first
 				row := tx.QueryRow(ctx, `
 					INSERT INTO authors (
 						name, created, updated, url, email
@@ -181,10 +176,44 @@ func configureRoutes() *gemini.ServeMux {
 				if err := row.Scan(&id); err != nil {
 					return err
 				}
-				// TODO allow authors to specify multiple accepted payments
-				// TODO monero view key
 				// TODO payments validate strings
-				row = tx.QueryRow(ctx, `
+				// go doesn't allow arrays of arbitrary length
+				// arbitrarily capping the max accepted payments to 15
+				accepted_payments := make([]*AcceptedPayment, 0, 15)
+				re := regexp.MustCompile(`application\/.+-paymentrequest`)
+				// outer loop finds paymentrequests within the author extensions
+				// if the payment request is not a monero one, then add to accepted_payments array as is
+				// inner loop is to find monero view key within extensions
+				// both view key and address are added together to accepted_payments
+				for _, outer_ext := range feed.Author.Extensions {
+					if re.MatchString(outer_ext.Type) {
+						if outer_ext.Type == "application/monero-paymentrequest" {
+							for _, inner_ext := range feed.Author.Extensions {
+								if inner_ext.Type == "application/monero-viewkey" {
+									accepted_payments = append(accepted_payments, &AcceptedPayment{
+										PayType:    outer_ext.Type,
+										ViewKey:    inner_ext.Href,
+										Address:    outer_ext.Href,
+										Registered: false,
+									})
+								}
+							}
+						} else {
+							accepted_payments = append(accepted_payments, &AcceptedPayment{
+								PayType:    outer_ext.Type,
+								ViewKey:    "",
+								Address:    outer_ext.Href,
+								Registered: false,
+							})
+						}
+					}
+				}
+				if len(accepted_payments) < 1 {
+					return errors.New("Failed to process Author's accepted payments")
+				}
+				// add the accepted payments to db table after we found them within the loop
+				for _, pymnt := range accepted_payments {
+					row = tx.QueryRow(ctx, `
 					INSERT INTO accepted_payments (
 						author_id, pay_type, address, registered
 					) VALUES (
@@ -194,9 +223,10 @@ func configureRoutes() *gemini.ServeMux {
 						$4
 					)
 					RETURNING id;
-				`, id, feed.Author.Extension.Type, feed.Author.Extension.Href, false)
-				if err := row.Scan(&id); err != nil {
-					return err
+				`, id, pymnt.PayType, pymnt.Address, pymnt.Registered)
+					if err := row.Scan(&id); err != nil {
+						return err
+					}
 				}
 
 				row = tx.QueryRow(ctx, `
