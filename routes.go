@@ -46,10 +46,10 @@ func configureRoutes() *gemini.ServeMux {
 				SELECT
 					f.title, f.description, f.url, a.name, f.updated, votes.count, votes.amount
 				FROM feeds f
-				INNER JOIN authors a ON feeds.author_id = authors.id
+				INNER JOIN authors a ON f.author_id = a.id
 				INNER JOIN (SELECT author_id, count(*) as count, sum(amount) as amount
 				FROM payments
-				GROUP BY author_id) as votes ON votes.author_id = feeds.author_id
+				GROUP BY author_id) as votes ON votes.author_id = f.author_id
 				ORDER BY votes.count DESC
 				LIMIT 10;
 			`)

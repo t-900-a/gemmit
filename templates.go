@@ -45,7 +45,7 @@ var dashboardPage = template.Must(template.
 	}).
 	Parse(`{{.Logo}}
 
-=> /about About gemmit: the front page of gemini
+=> /about About Gemmit: the front page of gemini
 => /add Add a new feed
 => /earn How to earn
 
@@ -114,9 +114,7 @@ This approach has several benefits.
 * auditability: votes can be publicly verified by all
 * sovereignty: Content producers own both their content and the associated metadata for voting / payments
 
-Gemmit is open source:
-
-=> https://github.com/t-900-a/gemmit Gemmit on Github
+=> https://github.com/t-900-a/gemmit Gemmit is free & open source
 
 => / Back to the Feeds
 `))
@@ -133,24 +131,39 @@ Gemmit ranks feeds by their popularity. Popularity is measured by how much each 
 As a feed author your subscribers will reward you with micropayments that will increase your ranking on Gemmit.
 
 ## In order to start earning you will need to ...
-* Create a wallet
+# Create a wallet
 => https://mymonero.com/ Monero Wallet
-* Add your payment address to your atom feed
-* Add your secret view key to your atom feed
-> <feed xmlns="http://www.w3.org/2005/Atom">
-> 	<id>gemini://example.com/</id>
-> 	<title>Example</title>
+# Add your payment address to your atom feed (as a subelement of author or entry or both)
+> <atom:link rel="payment" type="application/monero-paymentrequest" href="monero:donate.getmonero.org"/>
+# Add your secret view key to your atom feed
+>   ...
 > 	<author>
 > 		<name>anon</name>
 > 		<content type="application/monero-viewkey">ba98e9501f1f5bc930e7c9fedb2424d17650da85936fb78b7d95ef1f3e306d02</content>
-> 		<content type="application/monero-paymentrequest">monero:48uxJgXzhL78adi3i279zmQPcddMSam6mCX13JU2fLWcjeB2QhwPT9BMwNnrVcQGiXRDoHhtYz6Un8CpQ5LNHPTeJWJwsMT</content>
 > 	</author>
-> 	<entry>
-> 		...
-* Add your feed to Gemmit
+> 	...
+# Request donations within the content that you produce
+=> http://asciiqr.com/ Generate ASCII QR Code Online
+=> https://github.com/fumiyas/qrc Or locally
+█▀▀▀▀▀█ ▄ █ ▀▀▄▄▀ █▀▀▀▀▀█
+█ ███ █ ▄▄▄ █▄███ █ ███ █
+█ ▀▀▀ █ ▄█ ▄▄█▄▄█ █ ▀▀▀ █
+▀▀▀▀▀▀▀ ▀▄█▄▀ █▄█ ▀▀▀▀▀▀▀
+█████▄▀▀█▀▄▀██▀▀▄▀ █ ▀▄▀ 
+▀█ ▀▀▄▀ ▄ ▀▄ ▀▀▀█▀ ██▀▀█▀
+█▀ █ █▀██▀▀▄▀▀▀▀▄▀▀▄▀▀▀▀ 
+█  ▀ ▀▀ ▄▀▄▄█ █▀▄▄█▄   ██
+▀ ▀ ▀▀▀ ▄█▄▄ ▀█▄█▀▀▀█▄▀▀ 
+█▀▀▀▀▀█ ▀▀█▄ ▀ ▄█ ▀ █▀▀█▀
+█ ███ █ ██▄█▀█▀▀▀██▀█▀█▄▄
+█ ▀▀▀ █ ██▀▄▀▀█▄▄█▄▀▄▄▀ █
+▀▀▀▀▀▀▀ ▀▀ ▀▀▀    ▀ ▀ ▀▀▀
+=> monero:donate.getmonero.org Donate for more great content
+# Lastly, add your feed to Gemmit
 => /add Add feed
+
 
 => / Back to the Feeds
 `))
 
-var gemmitLogo = "\u0020.\u0020\u0020\u0020\u0020\u0020'\u0020\u0020\u0020\u0020\u0020,\n\u0020\u0020__G͟E͟M͟M͟I͟T͟__\n_\u0020/_|_____|_\\\u0020_\n\u0020\u0020'.\u0020\\\u0020\u0020\u0020/\u0020.'\n\u0020\u0020\u0020\u0020'.\\\u0020/.'\n\u0020\u0020\u0020\u0020\u0020\u0020'.'\n"
+var gemmitLogo = "\u0020.\u0020\u0020\u0020\u0020\u0020'\u0020\u0020\u0020\u0020,\n\u0020\u0020__G͟E͟M͟M͟I͟T͟__\n_\u0020/_|_____|_\\\u0020_\n\u0020\u0020'.\u0020\\\u0020\u0020\u0020/\u0020.'\n\u0020\u0020\u0020\u0020'.\\\u0020/.'\n\u0020\u0020\u0020\u0020\u0020\u0020'.'\n"
