@@ -176,7 +176,8 @@ func configureRoutes() *gemini.ServeMux {
 				if err := row.Scan(&id); err != nil {
 					return err
 				}
-				// TODO payments validate strings
+				// TODO at a minimum bitcoin / monero input address validation
+				// TODO viewkey input validation
 				// go doesn't allow arrays of arbitrary length
 				// arbitrarily capping the max accepted payments to 15
 				accepted_payments := make([]*AcceptedPayment, 0, 15)
@@ -215,15 +216,16 @@ func configureRoutes() *gemini.ServeMux {
 				for _, pymnt := range accepted_payments {
 					row = tx.QueryRow(ctx, `
 					INSERT INTO accepted_payments (
-						author_id, pay_type, address, registered
+						author_id, pay_type, view_key, address, registered
 					) VALUES (
 						$1,
 						$2,
 						$3,
-						$4
+						$4,
+						$5
 					)
 					RETURNING id;
-				`, id, pymnt.PayType, pymnt.Address, pymnt.Registered)
+				`, id, pymnt.PayType, pymnt.ViewKey, pymnt.Address, pymnt.Registered)
 					if err := row.Scan(&id); err != nil {
 						return err
 					}
