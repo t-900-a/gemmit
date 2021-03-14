@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	feeds "git.sr.ht/~sircmpwn/gemreader/feeds"
+	feeds "github.com/t-900-a/gemmit/feeds"
 
 	"github.com/jackc/pgx/v4/stdlib"
 )

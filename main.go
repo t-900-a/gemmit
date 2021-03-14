@@ -8,7 +8,7 @@ import (
 	"os/signal"
 	"time"
 
-	"git.sr.ht/~sircmpwn/gemreader/feeds"
+	"github.com/t-900-a/gemmit/feeds"
 
 	"git.sr.ht/~adnano/go-gemini"
 	"git.sr.ht/~adnano/go-gemini/certificate"
@@ -22,7 +22,6 @@ func main() {
 	if len(os.Args) > 3 {
 		certpath = os.Args[3]
 	}
-
 	db, err := sql.Open("pgx", cs)
 	if err != nil {
 		log.Fatalf("Failed to open a database connection: %v", err)

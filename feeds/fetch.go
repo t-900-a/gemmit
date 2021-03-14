@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"git.sr.ht/~adnano/go-gemini"
-	"github.com/SlyMarbo/rss"
 	"github.com/jackc/pgx/v4"
+	"github.com/zaddok/rss"
 )
 
 const (

@@ -8,7 +8,7 @@ import (
 	"encoding/hex"
 	"log"
 
-	"git.sr.ht/~sircmpwn/gemreader/feeds"
+	"github.com/t-900-a/gemmit/feeds"
 
 	"git.sr.ht/~adnano/go-gemini"
 )
