@@ -1,3 +1,12 @@
+DROP TABLE submissions;
+DROP TABLE payments;
+DROP TABLE entries;
+DROP TABLE feeds;
+DROP TABLE accepted_payments;
+DROP TABLE authors;
+DROP TYPE feed_kind;
+DROP TABLE users;
+
 CREATE TABLE users (
                        id serial PRIMARY KEY,
                        created timestamp NOT NULL,
@@ -5,8 +14,6 @@ CREATE TABLE users (
 );
 
 CREATE TYPE feed_kind AS ENUM ('gemini', 'rss');
-
-CREATE TYPE payment_type AS ENUM ('monero');
 
 CREATE TABLE authors (
                          id serial PRIMARY KEY,
@@ -20,7 +27,7 @@ CREATE TABLE authors (
 CREATE TABLE accepted_payments (
                                    id serial PRIMARY KEY,
                                    author_id INTEGER NOT NULL references authors(id),
-                                   pay_type payment_type NOT NULL,
+                                   pay_type varchar NOT NULL,
                                    view_key varchar UNIQUE,
                                    address varchar UNIQUE,
                                    registered BOOLEAN NOT NULL,
@@ -49,12 +56,12 @@ CREATE TABLE entries (
 
 CREATE TABLE payments (
                                  id serial PRIMARY KEY,
-                                 pay_type payment_type NOT NULL,
+                                 pay_type varchar NOT NULL,
                                  address varchar NOT NULL,
                                  tx_id varchar NOT NULL,
                                  tx_date timestamp NOT NULL,
                                  amount decimal NOT NULL,
-                                 author_id INTEGER NOT NULL references authors(id)
+                                 accepted_payments_id INTEGER NOT NULL references accepted_payments(id)
 );
 
 CREATE TABLE submissions (

@@ -13,7 +13,7 @@ import (
 
 	"git.sr.ht/~adnano/go-gemini"
 	"github.com/jackc/pgx/v4"
-	"github.com/zaddok/rss"
+	"github.com/t-900-a/rss"
 )
 
 const (

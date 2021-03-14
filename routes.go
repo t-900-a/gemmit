@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
+
 	//"fmt"
 	//"io"
 	"log"
@@ -47,9 +49,10 @@ func configureRoutes() *gemini.ServeMux {
 					f.title, f.description, f.url, a.name, f.updated, votes.count, votes.amount
 				FROM feeds f
 				INNER JOIN authors a ON f.author_id = a.id
-				INNER JOIN (SELECT author_id, count(*) as count, sum(amount) as amount
-				FROM payments
-				GROUP BY author_id) as votes ON votes.author_id = f.author_id
+				INNER JOIN (SELECT ap.author_id, count(*) as count, sum(p.amount) as amount
+				FROM payments p, accepted_payments ap
+				WHERE p.accepted_payments_id = ap.id
+				GROUP BY ap.author_id) as votes ON votes.author_id = f.author_id
 				ORDER BY votes.count DESC
 				LIMIT 10;
 			`)
@@ -107,6 +110,13 @@ func configureRoutes() *gemini.ServeMux {
 			return
 		}
 
+		if feed.Author.Extension.Rel != "payment" {
+			w.WriteHeader(10, "author payment data malformed")
+			return
+		}
+
+
+
 		conn, err := feeds.ForContext(ctx)
 		if err != nil {
 			panic(err)
@@ -125,19 +135,66 @@ func configureRoutes() *gemini.ServeMux {
 					panic(err)
 				}
 			}()
-			// TODO insert author, dependent on https://github.com/SlyMarbo/rss/issues/75
+			rows, err := tx.Query(ctx, `
+			SELECT id, url
+			FROM feeds
+			WHERE url = $1
+		`, feedURL.String())
+			if err != nil {
+				panic(err)
+			}
+			var duplicates []*struct {
+				ID  int
+				URL string
+			}
+			for rows.Next() {
+				feed := &struct {
+					ID  int
+					URL string
+				}{}
+				if err := rows.Scan(&feed.ID, &feed.URL); err != nil {
+					panic(err)
+				}
+				log.Println(feed.URL)
+				duplicates = append(duplicates, feed)
+			}
+			log.Println(len(duplicates))
+			if len(duplicates) > 0 {
+				return errors.New("Feed already exists")
+			}
+
+			// TODO Author validate strings
 			if err := func() error {
 				var id int
 				row := tx.QueryRow(ctx, `
 					INSERT INTO authors (
-						name, created, updated
+						name, created, updated, url, email
 					) VALUES (
 						$1,
 						NOW() at time zone 'utc',
-						NOW() at time zone 'utc'
+						NOW() at time zone 'utc',
+						$2,
+						$3
 					)
 					RETURNING id;
-				`, feed.Author)
+				`, feed.Author.Name, feed.Author.URI, feed.Author.Email)
+				if err := row.Scan(&id); err != nil {
+					return err
+				}
+				// TODO allow authors to specify multiple accepted payments
+				// TODO monero view key
+				// TODO payments validate strings
+				row = tx.QueryRow(ctx, `
+					INSERT INTO accepted_payments (
+						author_id, pay_type, address, registered
+					) VALUES (
+						$1,
+						$2,
+						$3,
+						$4
+					)
+					RETURNING id;
+				`, id, feed.Author.Extension.Type, feed.Author.Extension.Href, false)
 				if err := row.Scan(&id); err != nil {
 					return err
 				}
@@ -180,7 +237,11 @@ func configureRoutes() *gemini.ServeMux {
 			return nil
 		}); err != nil {
 			log.Println(err)
-			w.WriteHeader(40, "Internal server error")
+			if err.Error() == "Feed already exists" {
+				w.WriteHeader(10, err.Error())
+			} else {
+				w.WriteHeader(40, "Internal server error")
+			}
 			return
 		}
 

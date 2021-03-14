@@ -133,9 +133,9 @@ As a feed author your subscribers will reward you with micropayments that will i
 ## In order to start earning you will need to ...
 # Create a wallet
 => https://mymonero.com/ Monero Wallet
-# Add your payment address to your atom feed (as a subelement of author or entry or both)
+# Add your payment address to your atom feed (as a subelement of author)
 > <atom:link rel="payment" type="application/monero-paymentrequest" href="monero:donate.getmonero.org"/>
-# Add your secret view key to your atom feed
+# Add your secret view key to your atom feed (as a subelement of author)
 >   ...
 > 	<author>
 > 		<name>anon</name>
