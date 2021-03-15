@@ -31,6 +31,7 @@ CREATE TABLE accepted_payments (
                                    view_key varchar UNIQUE,
                                    address varchar UNIQUE,
                                    registered BOOLEAN NOT NULL,
+                                   scan_height INTEGER,
                                    UNIQUE (author_id, id)
 );
 
@@ -56,7 +57,6 @@ CREATE TABLE entries (
 
 CREATE TABLE payments (
                                  id serial PRIMARY KEY,
-                                 pay_type varchar NOT NULL,
                                  address varchar NOT NULL,
                                  tx_id varchar NOT NULL,
                                  tx_date timestamp NOT NULL,

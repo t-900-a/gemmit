@@ -39,7 +39,7 @@ func main() {
 				panic(err)
 			}
 		}()
-
+		// update entries for all feeds
 		since := time.Now().UTC().Add(-4 * time.Hour)
 		rows, err := tx.Query(ctx, `
 			SELECT id, url
