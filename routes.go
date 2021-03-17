@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/url"
 	"regexp"
+	"strings"
 
 	"github.com/t-900-a/gemmit/feeds"
 
@@ -176,7 +177,7 @@ func configureRoutes() *gemini.ServeMux {
 				if err := row.Scan(&id); err != nil {
 					return err
 				}
-				// TODO at a minimum bitcoin / monero input address validation
+				// TODO at add bitcoin input address validation
 				// TODO viewkey input validation
 				// go doesn't allow arrays of arbitrary length
 				// arbitrarily capping the max accepted payments to 15
@@ -188,16 +189,28 @@ func configureRoutes() *gemini.ServeMux {
 				// both view key and address are added together to accepted_payments
 				for _, outer_ext := range feed.Author.Extensions {
 					if re.MatchString(outer_ext.Type) {
+						split_index := strings.Index(outer_ext.Href, ":")
+						address := ""
+						if split_index > -1 {
+							address = outer_ext.Href[split_index+1:]
+						} else {
+							return errors.New("Author's payment data within feed is malformed")
+						}
 						if outer_ext.Type == "application/monero-paymentrequest" {
-							for _, inner_ext := range feed.Author.Extensions {
-								if inner_ext.Type == "application/monero-viewkey" {
-									accepted_payments = append(accepted_payments, &AcceptedPayment{
-										PayType:    outer_ext.Type,
-										ViewKey:    inner_ext.Href,
-										Address:    outer_ext.Href,
-										Registered: false,
-									})
+							re = regexp.MustCompile("4[a-zA-Z\\d]{94}")
+							if re.MatchString(address) {
+								for _, inner_ext := range feed.Author.Extensions {
+									if inner_ext.Type == "application/monero-viewkey" {
+										accepted_payments = append(accepted_payments, &AcceptedPayment{
+											PayType:    outer_ext.Type,
+											ViewKey:    inner_ext.Href,
+											Address:    address,
+											Registered: false,
+										})
+									}
 								}
+							} else {
+								return errors.New("Author's payment data within feed is malformed")
 							}
 						} else {
 							accepted_payments = append(accepted_payments, &AcceptedPayment{
