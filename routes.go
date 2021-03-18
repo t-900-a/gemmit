@@ -71,8 +71,9 @@ func configureRoutes() *gemini.ServeMux {
 
 		w.WriteHeader(20, "text/gemini")
 		err := dashboardPage.Execute(w, &DashboardPage{
-			Feeds: top_feeds,
-			Logo:  gemmitLogo,
+			Feeds:   top_feeds,
+			Logo:    gemmitLogo,
+			Newline: "\n",
 		})
 		if err != nil {
 			panic(err)

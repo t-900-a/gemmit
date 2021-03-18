@@ -5,7 +5,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -146,17 +145,16 @@ func main() {
 
 			if resp.StatusCode >= 200 && resp.StatusCode <= 299 {
 				body, err := ioutil.ReadAll(resp.Body)
-				log.Println(string(body))
 				if err != nil {
 					log.Println(err)
 				}
 
 				type Transaction struct {
 					Id            uint64    `json:"id"`
-					Hash          byte      `json:"hash"`
+					Hash          string    `json:"hash"`
 					Timestamp     time.Time `json:"timestamp"`
-					TotalReceived uint64    `json:"total_received"`
-					TotalSent     uint64    `json:"total_sent"`
+					TotalReceived string    `json:"total_received"`
+					TotalSent     string    `json:"total_sent"`
 					UnlockTime    uint64    `json:"unlock_time"`
 					Height        int       `json:"height"`
 					//SpentOutputs  []struct{} `json:"spent_outputs"`
@@ -171,24 +169,25 @@ func main() {
 					ScannedBlockHeight uint64        `json:"scanned_block_height"`
 					StartHeight        uint64        `json:"start_height"`
 					BlockchainHeight   uint64        `json:"blockchain_height"`
-					Transactions       []Transaction `json:"transaction"`
+					Transactions       []Transaction `json:"transactions"`
 				}
 
 				var ts = new(Txs)
 				err = json.Unmarshal(body, &ts)
-				fmt.Printf("%+v \n", ts)
 				if err != nil {
 					log.Println(err)
 				}
 				for _, t := range ts.Transactions {
-					log.Println(t)
-					if a.ScannedHeight < t.Height {
+					received, _ := strconv.ParseFloat(t.TotalReceived, 64)
+					if a.ScannedHeight < t.Height && received > float64(0) {
+						// convert from piconeros
+						received = received * float64(0.000000000001)
 						// transaction hasn't been recorded
 						if _, err := tx.Exec(ctx, `
 							INSERT INTO payments (
 								address, tx_id, tx_date, amount, accepted_payments_id
-							) VALUES ($1, $2);
-							`, a.Address, string(t.Hash), t.Timestamp, t.TotalReceived, a.ID); err != nil {
+							) VALUES ($1, $2, $3, $4, $5);
+							`, a.Address, t.Hash, t.Timestamp, received, a.ID); err != nil {
 							return err
 						}
 

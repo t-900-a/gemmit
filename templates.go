@@ -21,7 +21,7 @@ type Feed struct {
 	Author      string
 	Updated     time.Time
 	VoteCnt     int
-	VoteAmt     int
+	VoteAmt     string
 }
 
 type Author struct {
@@ -32,8 +32,9 @@ type Author struct {
 }
 
 type DashboardPage struct {
-	Feeds []*Feed
-	Logo  string
+	Feeds   []*Feed
+	Logo    string
+	Newline string
 }
 
 var dashboardPage = template.Must(template.
@@ -48,13 +49,13 @@ var dashboardPage = template.Must(template.
 => /about About Gemmit: the front page of gemini
 => /add Add a new feed
 => /earn How to earn
-
+{{.Newline}}
 {{- if .Feeds }}
 ## Top 10 Feeds of all time
 {{range .Feeds}}
 => {{.URL}} {{.Title}} - {{.Description}}
-^ {{.VoteCnt}} ^ | ɱ {{.VoteAmt}} ɱ
-Curated by {{.Author}} on {{.Updated | date}}
+Votes: {{.VoteCnt}} | ɱ  {{.VoteAmt}}
+Last updated by {{.Author}} on {{.Updated | date}}
 {{end}}
 {{end}}
 
