@@ -229,16 +229,17 @@ func configureRoutes() *gemini.ServeMux {
 				for _, pymnt := range accepted_payments {
 					row = tx.QueryRow(ctx, `
 					INSERT INTO accepted_payments (
-						author_id, pay_type, view_key, address, registered
+						author_id, pay_type, view_key, address, registered, scan_height
 					) VALUES (
 						$1,
 						$2,
 						$3,
 						$4,
-						$5
+						$5,
+						$6
 					)
 					RETURNING id;
-				`, id, pymnt.PayType, pymnt.ViewKey, pymnt.Address, pymnt.Registered)
+				`, id, pymnt.PayType, pymnt.ViewKey, pymnt.Address, pymnt.Registered, 0)
 					if err := row.Scan(&id); err != nil {
 						return err
 					}

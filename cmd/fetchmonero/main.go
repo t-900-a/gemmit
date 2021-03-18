@@ -1,17 +1,20 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"strconv"
-	"strings"
 	"time"
+
+	feeds "github.com/t-900-a/gemmit/feeds"
 
 	"github.com/jackc/pgx/v4/stdlib"
 )
@@ -46,7 +49,7 @@ func main() {
 		}()
 		// update payment records for all authors
 		rows, err := tx.Query(ctx, `
-			SELECT id, view_key, address, registered, scanned_height
+			SELECT id, view_key, address, registered, scan_height
 			FROM accepted_payments 
 			WHERE pay_type = $1;
 		`, "application/monero-paymentrequest")
@@ -79,23 +82,19 @@ func main() {
 			if !a.Registered {
 				// login for unregistered accounts
 				method := "/login"
-				data := url.Values{
-					"address":           {a.Address},
-					"view_key":          {a.ViewKey},
-					"create_account":    {"true"},
-					"generated_locally": {"true"},
-				}
+				strData := `{"address":"` + a.Address + `","view_key":"` + a.ViewKey + `","create_account":true,"generated_locally":false}`
+				jsonData := []byte(strData)
 				u, _ := url.ParseRequestURI(lightwallet)
 				u.Path = method
 				urlStr := u.String()
-
 				client := &http.Client{}
-				r, _ := http.NewRequest(http.MethodPost, urlStr, strings.NewReader(data.Encode()))
+				r, _ := http.NewRequest(http.MethodPost, urlStr, bytes.NewBuffer(jsonData))
+				r.Header.Add("Accept", "application/json")
+				r.Header.Add("Accept-Encoding", "gzip, deflate, br")
 				r.Header.Add("Content-Type", "application/json")
-				r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
+				r.Header.Add("Content-Length", strconv.Itoa(len(jsonData)))
 
 				resp, err := client.Do(r)
-
 				if err != nil {
 					log.Println(err)
 				}
@@ -117,7 +116,6 @@ func main() {
 						log.Println(err)
 					}
 					a.Registered = true
-					a.ScannedHeight = l.StartHeight
 					tx.Exec(ctx, `
 						UPDATE accepted_payments SET registered=$2 WHERE id = $1
 						`, a.ID, a.Registered)
@@ -128,44 +126,44 @@ func main() {
 
 			// get transactions for address
 			method := "/get_address_txs"
-			data := url.Values{
-				"address":  {a.Address},
-				"view_key": {a.ViewKey},
-			}
+			strData := `{"address":"` + a.Address + `","view_key":"` + a.ViewKey + `"}`
+			jsonData := []byte(strData)
 			u, _ := url.ParseRequestURI(lightwallet)
 			u.Path = method
 			urlStr := u.String()
 
 			client := &http.Client{}
-			r, _ := http.NewRequest(http.MethodPost, urlStr, strings.NewReader(data.Encode()))
+			r, _ := http.NewRequest(http.MethodPost, urlStr, bytes.NewBuffer(jsonData))
+			r.Header.Add("Accept", "application/json")
+			r.Header.Add("Accept-Encoding", "gzip, deflate, br")
 			r.Header.Add("Content-Type", "application/json")
-			r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
+			r.Header.Add("Content-Length", strconv.Itoa(len(jsonData)))
 
 			resp, err := client.Do(r)
-
 			if err != nil {
 				log.Println(err)
 			}
 
 			if resp.StatusCode >= 200 && resp.StatusCode <= 299 {
 				body, err := ioutil.ReadAll(resp.Body)
+				log.Println(string(body))
 				if err != nil {
 					log.Println(err)
 				}
 
 				type Transaction struct {
-					Id            uint64     `json:"id"`
-					Hash          byte       `json:"hash"`
-					Timestamp     time.Time  `json:"timestamp"`
-					TotalReceived uint64     `json:"total_received"`
-					TotalSent     uint64     `json:"total_sent"`
-					UnlockTime    uint64     `json:"unlock_time"`
-					Height        int        `json:"height"`
-					SpentOutputs  []struct{} `json:"spent_outputs"`
-					PaymentId     byte       `json:"payment_id"`
-					Coinbase      bool       `json:"coinbase"`
-					Mempool       bool       `json:"mempool"`
-					Mixin         uint32     `json:"mixin"`
+					Id            uint64    `json:"id"`
+					Hash          byte      `json:"hash"`
+					Timestamp     time.Time `json:"timestamp"`
+					TotalReceived uint64    `json:"total_received"`
+					TotalSent     uint64    `json:"total_sent"`
+					UnlockTime    uint64    `json:"unlock_time"`
+					Height        int       `json:"height"`
+					//SpentOutputs  []struct{} `json:"spent_outputs"`
+					//PaymentId     byte       `json:"payment_id"`
+					Coinbase bool   `json:"coinbase"`
+					Mempool  bool   `json:"mempool"`
+					Mixin    uint32 `json:"mixin"`
 				}
 				type Txs struct {
 					TotalReceived      uint64        `json:"total_received"`
@@ -178,10 +176,12 @@ func main() {
 
 				var ts = new(Txs)
 				err = json.Unmarshal(body, &ts)
+				fmt.Printf("%+v \n", ts)
 				if err != nil {
 					log.Println(err)
 				}
 				for _, t := range ts.Transactions {
+					log.Println(t)
 					if a.ScannedHeight < t.Height {
 						// transaction hasn't been recorded
 						if _, err := tx.Exec(ctx, `
@@ -195,6 +195,8 @@ func main() {
 						a.ScannedHeight = t.Height
 					}
 				}
+			} else {
+				log.Println("Failed to register / login to ", lightwallet, " for Monero account ", a.Address)
 			}
 			tx.Exec(ctx, `
 				UPDATE accepted_payments SET scan_height=$2 WHERE id = $1
