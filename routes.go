@@ -46,6 +46,7 @@ func configureRoutes() *gemini.ServeMux {
 				FROM payments p, accepted_payments ap
 				WHERE p.accepted_payments_id = ap.id
 				GROUP BY ap.author_id) as votes ON votes.author_id = f.author_id
+				WHERE approved = true
 				ORDER BY votes.count DESC
 				LIMIT 10;
 			`)
@@ -248,18 +249,18 @@ func configureRoutes() *gemini.ServeMux {
 
 				row = tx.QueryRow(ctx, `
 					INSERT INTO feeds (
-						created, updated, author_id, kind, url,  title, description
+						created, updated, author_id, kind, url,  title, description, approved
 					) VALUES (
 						NOW() at time zone 'utc',
 						NOW() at time zone 'utc',
-						$1, $2, $3, $4, $5
+						$1, $2, $3, $4, $5, $6
 					)
 					ON CONFLICT ON CONSTRAINT feeds_url_key
 					DO UPDATE SET
 						(updated, title, description) =
 						(EXCLUDED.updated, EXCLUDED.title, EXCLUDED.description)
 					RETURNING id;
-				`, id, kind, feedURL.String(), feed.Title, feed.Description)
+				`, id, kind, feedURL.String(), feed.Title, feed.Description, true)
 				if err := row.Scan(&id); err != nil {
 					return err
 				}

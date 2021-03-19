@@ -43,7 +43,8 @@ CREATE TABLE feeds (
                        kind feed_kind NOT NULL,
                        url varchar UNIQUE,
                        title varchar,
-                       description varchar
+                       description varchar,
+                       approved BOOLEAN NOT NULL
 );
 
 CREATE TABLE entries (
