@@ -191,6 +191,7 @@ Feeds can be subscribed to via a dedicated feed reader, but most Gemini Browsers
 ## Need Monero?
 => https://xmrig.com/ Mine it - yes, any hardware can be used. Choose a pool with a low payout.
 => https://www.google.com Buy it
+=> https://github.com/t-900-a/awesome-gemmit/#monero More information on Monero
 
 => / Back to the Feeds
 `))
