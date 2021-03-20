@@ -17,4 +17,5 @@ This approach has several benefits.
 * sovereignty: Content producers own both their content and the associated metadata for voting / payments
 
 [Gemmit ecosystem](https://github.com/t-900-a/awesome-gemmit/)
-[Administrative Notes](https://github.com/t-900-a/gemmit/blob/main/adminstration/README.md)
+
+[Administrative Notes](https://github.com/t-900-a/gemmit/blob/main/administration/README.md)
