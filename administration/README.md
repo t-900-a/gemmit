@@ -11,7 +11,7 @@ If 1.16 is not available in your repo (as is with ubuntu), you may manually inst
 https://www.kalilinux.in/2020/06/how-to-install-golang-in-kali-linux-new.html
 
 ```
-git clone https://github.com/t-900-a/gemmit
+git clone https://github.com/t-900-a/gemmit.git
 cd gemmit
 go build .
 chmod +x gemmit
