@@ -192,7 +192,7 @@ Feeds can be subscribed to via a dedicated feed reader, but most Gemini Browsers
 => / Back to the Feeds
 `))
 
-var gemmitLogo = "\u0020.\u0020\u0020\u0020\u0020\u0020'\u0020\u0020\u0020\u0020,\n\u0020\u0020__G͟E͟M͟M͟I͟T͟__\n_\u0020/_|_____|_\\\u0020_\n\u0020\u0020'.\u0020\\\u0020\u0020\u0020/\u0020.'\n\u0020\u0020\u0020\u0020'.\\\u0020/.'\n\u0020\u0020\u0020\u0020\u0020\u0020'.'\n"
+var gemmitLogo = "```\u0020.\u0020\u0020\u0020\u0020\u0020'\u0020\u0020\u0020\u0020,\n\u0020\u0020__G͟E͟M͟M͟I͟T͟__\n_\u0020/_|_____|_\\\u0020_\n\u0020\u0020'.\u0020\\\u0020\u0020\u0020/\u0020.'\n\u0020\u0020\u0020\u0020'.\\\u0020/.'\n\u0020\u0020\u0020\u0020\u0020\u0020'.'\n```"
 
 type AcceptedPayment struct {
 	PayType    string
