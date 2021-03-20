@@ -49,6 +49,7 @@ var dashboardPage = template.Must(template.
 => /about About Gemmit: the front page of gemini
 => /add Add a new feed
 => /earn How to earn
+=> /vote How to vote
 {{.Newline}}
 {{- if .Feeds }}
 ## Top 10 Feeds of all time
@@ -116,6 +117,7 @@ This approach has several benefits.
 * sovereignty: Content producers own both their content and the associated metadata for voting / payments
 
 => https://github.com/t-900-a/gemmit Gemmit is free & open source
+=> https://github.com/t-900-a/awesome-gemmit/ Gemmit is an ecosystem
 
 => / Back to the Feeds
 `))
@@ -162,6 +164,29 @@ As a feed author your subscribers will reward you with micropayments that will i
 => monero:donate.getmonero.org Donate for more great content
 # Lastly, add your feed to Gemmit
 => /add Add feed
+
+=> https://github.com/t-900-a/awesome-gemmit/ As the ecosystem grows scripts to automate feed generation will become available
+
+=> / Back to the Feeds
+`))
+
+type VotePage struct {
+	Logo string
+}
+
+var votePage = template.Must(template.
+	New("Vote").
+	Parse(`{{.Logo}}
+
+Gemmit ranks feeds by their popularity.
+
+Subscribe to any feed on the site, if you enjoy the feeds content please vote/tip using Monero.
+
+Their address should be displayed within in their content as a QR Code or a link. After tipping your vote will be reflected on this site.
+
+Feeds can be subscribed to via a dedicated feed reader, but most Gemini Browsers include functionality to subscribe to feeds.
+
+=> https://github.com/t-900-a/awesome-gemmit/#readers More information on readers
 
 
 => / Back to the Feeds

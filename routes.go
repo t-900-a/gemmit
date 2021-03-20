@@ -316,5 +316,15 @@ func configureRoutes() *gemini.ServeMux {
 		}
 	})
 
+	mux.HandleFunc("/vote", func(ctx context.Context, w gemini.ResponseWriter, r *gemini.Request) {
+		w.WriteHeader(20, "text/gemini")
+		err := votePage.Execute(w, &EarnPage{
+			Logo: gemmitLogo,
+		})
+		if err != nil {
+			panic(err)
+		}
+	})
+
 	return mux
 }
