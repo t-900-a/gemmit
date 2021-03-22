@@ -18,7 +18,7 @@ CREATE TYPE feed_kind AS ENUM ('gemini', 'rss');
 CREATE TABLE authors (
                          id serial PRIMARY KEY,
                          name varchar,
-                         created timestamp NOT NULL,
+                         created timestamp,
                          updated timestamp NOT NULL,
                          url varchar,
                          email varchar
