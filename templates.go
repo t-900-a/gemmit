@@ -80,7 +80,7 @@ var browsePage = template.Must(template.
 	Parse(`{{.Logo}}
 {{.Newline}}
 {{- if .Entries }}
-## Latest Entries
+## Latest Posts
 {{range .Entries}}
 => {{.URL}} {{.Title}}
 Feed Votes: {{.VoteCnt}} | ɱ  {{.VoteAmt}}
