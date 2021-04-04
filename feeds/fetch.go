@@ -87,11 +87,6 @@ func fetchGemini(ctx context.Context, remoteURL *url.URL) (*rss.Feed, string, er
 			return nil, "", err
 		}
 		feed, err := rss.Parse(data)
-		log.Println("ENTRY DATA")
-		for _, fd := range feed.Items {
-			log.Println(fd.Title)
-			log.Println(fd.Link)
-		}
 
 		return feed, FEED_RSS, err
 	default:

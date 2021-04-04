@@ -50,7 +50,6 @@ func main() {
 			URL string
 		}
 		for rows.Next() {
-			log.Printf("rowing")
 			feed := &struct {
 				ID  int
 				URL string
@@ -59,7 +58,6 @@ func main() {
 				panic(err)
 			}
 			toUpdate = append(toUpdate, feed)
-			log.Printf(string(len(toUpdate)))
 		}
 
 		for _, f := range toUpdate {
@@ -70,10 +68,7 @@ func main() {
 				log.Println("Error: %v", err)
 				continue
 			}
-			log.Printf(string(len(feed.Items)))
-			for _, fd := range feed.Items {
-				log.Printf(fd.Summary)
-			}
+
 			err = feeds.Index(ctx, tx, feed.Items, f.ID)
 			if err != nil {
 				log.Println("Error: %v", err)
