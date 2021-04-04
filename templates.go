@@ -6,11 +6,12 @@ import (
 )
 
 type Entry struct {
-	ID        int
 	Title     string
 	URL       string
 	Published time.Time
 	Feed      string
+	VoteCnt   int
+	VoteAmt   string
 }
 
 type Feed struct {
@@ -60,7 +61,35 @@ Last updated by {{.Author}} on {{.Updated | date}}
 {{end}}
 
 
-=> /top?t=all More
+=> /browse Browse Posts
+`))
+
+type BrowsePage struct {
+	Entries []*Entry
+	Logo    string
+	Newline string
+}
+
+var browsePage = template.Must(template.
+	New("browse").
+	Funcs(template.FuncMap{
+		"date": func(date time.Time) string {
+			return date.Format("Monday, January 2 2006")
+		},
+	}).
+	Parse(`{{.Logo}}
+{{.Newline}}
+{{- if .Entries }}
+## Latest Entries
+{{range .Entries}}
+=> {{.URL}} {{.Title}}
+Feed Votes: {{.VoteCnt}} | ɱ  {{.VoteAmt}}
+Published on {{.Published | date}} within the {{.Feed}} feed
+{{end}}
+{{end}}
+
+
+=> / Back
 `))
 
 type AboutPage struct {

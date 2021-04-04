@@ -68,6 +68,57 @@ func configureRoutes() *gemini.ServeMux {
 		}
 	})
 
+	mux.HandleFunc("/browse", func(ctx context.Context, w gemini.ResponseWriter, r *gemini.Request) {
+		var latest_entries []*Entry
+		if err := feeds.WithTx(ctx, &sql.TxOptions{
+			Isolation: 0,
+			ReadOnly:  true,
+		}, func(tx *sql.Tx) error {
+			rows, err := tx.QueryContext(ctx, `
+				SELECT
+					e.title, f.title, e.published, e.url, COALESCE(votes.count, 0), COALESCE(votes.amount, 0)
+				FROM feeds f
+				INNER JOIN entries e ON e.feed_id = f.id
+				INNER JOIN authors a ON f.author_id = a.id
+				LEFT JOIN (SELECT ap.author_id, count(*) as count, sum(p.amount) as amount
+				FROM payments p, accepted_payments ap
+				WHERE p.accepted_payments_id = ap.id
+				GROUP BY ap.author_id) as votes ON votes.author_id = f.author_id
+				WHERE approved = true
+				ORDER BY e.published DESC
+				LIMIT 10;
+			`)
+			if err != nil {
+				return err
+			}
+
+			for rows.Next() {
+				entry := &Entry{}
+				if err := rows.Scan(&entry.Title, &entry.Feed, &entry.Published,
+					&entry.URL, &entry.VoteCnt, &entry.VoteAmt); err != nil {
+					return err
+				}
+				latest_entries = append(latest_entries, entry)
+			}
+
+			return nil
+		}); err != nil {
+			log.Println(err)
+			w.WriteHeader(40, "Internal server error")
+			return
+		}
+
+		w.WriteHeader(20, "text/gemini")
+		err := browsePage.Execute(w, &BrowsePage{
+			Entries: latest_entries,
+			Logo:    gemmitLogo,
+			Newline: "\n",
+		})
+		if err != nil {
+			panic(err)
+		}
+	})
+
 	mux.HandleFunc("/add", func(ctx context.Context, w gemini.ResponseWriter, r *gemini.Request) {
 		user := User(ctx)
 		if r.URL.RawQuery == "" {
