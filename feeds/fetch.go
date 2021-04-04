@@ -156,7 +156,6 @@ func Index(ctx context.Context, tx pgx.Tx,
 
 	rows := make([][]interface{}, len(items))
 	for i, item := range items {
-		log.Println(item.Title)
 		rows[i] = []interface{}{
 			item.Title, item.Date, item.Link, feedId,
 		}
@@ -179,7 +178,6 @@ func Index(ctx context.Context, tx pgx.Tx,
 		ON CONFLICT DO NOTHING;
 	`)
 	if err != nil {
-		log.Println("BROKEN!")
 		return err
 	}
 
