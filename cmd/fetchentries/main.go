@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/url"
 	"os"
-	"time"
 
 	feeds "github.com/t-900-a/gemmit/feeds"
 
@@ -40,12 +39,9 @@ func main() {
 			}
 		}()
 		// update entries for all feeds
-		since := time.Now().UTC().Add(-4 * time.Hour)
 		rows, err := tx.Query(ctx, `
-			SELECT id, url
-			FROM feeds
-			WHERE updated < $1
-		`, since)
+			SELECT id, feed_url
+			FROM feeds`)
 		if err != nil {
 			panic(err)
 		}
@@ -54,6 +50,7 @@ func main() {
 			URL string
 		}
 		for rows.Next() {
+			log.Printf("rowing")
 			feed := &struct {
 				ID  int
 				URL string
@@ -62,6 +59,7 @@ func main() {
 				panic(err)
 			}
 			toUpdate = append(toUpdate, feed)
+			log.Printf(string(len(toUpdate)))
 		}
 
 		for _, f := range toUpdate {
@@ -72,6 +70,10 @@ func main() {
 				log.Println("Error: %v", err)
 				continue
 			}
+			log.Printf(string(len(feed.Items)))
+			for _, fd := range feed.Items {
+				log.Printf(fd.Summary)
+			}
 			err = feeds.Index(ctx, tx, feed.Items, f.ID)
 			if err != nil {
 				log.Println("Error: %v", err)
@@ -80,8 +82,8 @@ func main() {
 		}
 
 		tx.Exec(ctx, `
-			UPDATE feeds SET updated = NOW() at time zone 'utc' WHERE updated < $1
-		`, since)
+			UPDATE feeds SET updated = NOW() at time zone 'utc'
+		`)
 		tx.Commit(ctx)
 
 		return nil

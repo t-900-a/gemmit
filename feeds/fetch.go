@@ -77,6 +77,10 @@ func fetchGemini(ctx context.Context, remoteURL *url.URL) (*rss.Feed, string, er
 				feed.Items = append(feed.Items, item)
 			}
 		}
+		log.Println("ENTRY DATA")
+		log.Println(item.Title)
+		log.Println(item.Date)
+		log.Println(item.Link)
 		return &feed, FEED_GEMINI, nil
 	case "text/xml",
 		"application/rss+xml",

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/x509"
 	"text/template"
 	"time"
 )
@@ -62,34 +61,6 @@ Last updated by {{.Author}} on {{.Updated | date}}
 
 
 => /top?t=all More
-`))
-
-type WelcomePage struct {
-	Cert *x509.Certificate
-	Hash string
-	Logo string
-}
-
-var welcomePage = template.Must(template.
-	New("welcome").
-	Parse(`{{.Logo}}
-
-Welcome to gemmit! We have registered your account automatically using your
-client certificate.
-
-Subject:
-	{{.Cert.Subject.ToRDNSequence}}
-SHA-256 Hash:
-	{{.Hash}}
-
-Keep this certificate safe! You'll need to back it up and bring it with you to
-new devices in order to access your account. Your certificate hash is the only
-information we store to identify you, and we cannot help you recover your
-account if you lose your certificate.
-
-Let's start by adding some feeds. You can add your own feed or any other hidden gems within Geminispace.
-
-=> /add Add feed
 `))
 
 type AboutPage struct {

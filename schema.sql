@@ -44,7 +44,8 @@ CREATE TABLE feeds (
                        url varchar UNIQUE,
                        title varchar,
                        description varchar,
-                       approved BOOLEAN NOT NULL
+                       approved BOOLEAN NOT NULL,
+                       feed_url varchar UNIQUE
 );
 
 CREATE TABLE entries (

@@ -19,19 +19,6 @@ func configureRoutes() *gemini.ServeMux {
 	mux := &gemini.ServeMux{}
 
 	mux.HandleFunc("/", func(ctx context.Context, w gemini.ResponseWriter, r *gemini.Request) {
-		user := User(ctx)
-		if user.NewUser {
-			err := welcomePage.Execute(w, &WelcomePage{
-				Cert: user.Certificate,
-				Hash: user.Hash,
-				Logo: gemmitLogo,
-			})
-			if err != nil {
-				panic(err)
-			}
-			return
-		}
-
 		var top_feeds []*Feed
 		if err := feeds.WithTx(ctx, &sql.TxOptions{
 			Isolation: 0,
@@ -39,10 +26,10 @@ func configureRoutes() *gemini.ServeMux {
 		}, func(tx *sql.Tx) error {
 			rows, err := tx.QueryContext(ctx, `
 				SELECT
-					f.title, f.description, f.url, a.name, f.updated, votes.count, votes.amount
+					f.title, f.description, f.url, a.name, f.updated, COALESCE(votes.count, 0), COALESCE(votes.amount, 0)
 				FROM feeds f
 				INNER JOIN authors a ON f.author_id = a.id
-				INNER JOIN (SELECT ap.author_id, count(*) as count, sum(p.amount) as amount
+				LEFT JOIN (SELECT ap.author_id, count(*) as count, sum(p.amount) as amount
 				FROM payments p, accepted_payments ap
 				WHERE p.accepted_payments_id = ap.id
 				GROUP BY ap.author_id) as votes ON votes.author_id = f.author_id
@@ -249,18 +236,18 @@ func configureRoutes() *gemini.ServeMux {
 
 				row = tx.QueryRow(ctx, `
 					INSERT INTO feeds (
-						created, updated, author_id, kind, url,  title, description, approved
+						created, updated, author_id, kind, url,  title, description, approved, feed_url
 					) VALUES (
 						NOW() at time zone 'utc',
 						NOW() at time zone 'utc',
-						$1, $2, $3, $4, $5, $6
+						$1, $2, $3, $4, $5, $6, $7
 					)
 					ON CONFLICT ON CONSTRAINT feeds_url_key
 					DO UPDATE SET
 						(updated, title, description) =
 						(EXCLUDED.updated, EXCLUDED.title, EXCLUDED.description)
 					RETURNING id;
-				`, id, kind, feedURL.String(), feed.Title, feed.Description, true)
+				`, id, kind, feed.Link, feed.Title, feed.Description, true, feedURL.String())
 				if err := row.Scan(&id); err != nil {
 					return err
 				}
