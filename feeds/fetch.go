@@ -77,10 +77,6 @@ func fetchGemini(ctx context.Context, remoteURL *url.URL) (*rss.Feed, string, er
 				feed.Items = append(feed.Items, item)
 			}
 		}
-		log.Println("ENTRY DATA")
-		log.Println(item.Title)
-		log.Println(item.Date)
-		log.Println(item.Link)
 		return &feed, FEED_GEMINI, nil
 	case "text/xml",
 		"application/rss+xml",
@@ -91,6 +87,12 @@ func fetchGemini(ctx context.Context, remoteURL *url.URL) (*rss.Feed, string, er
 			return nil, "", err
 		}
 		feed, err := rss.Parse(data)
+		log.Println("ENTRY DATA")
+		for _, fd := range feed.Items {
+			log.Println(fd.Title)
+			log.Println(fd.Link)
+		}
+
 		return feed, FEED_RSS, err
 	default:
 		return nil, "", fmt.Errorf("Cannot interpret %s as a feed", resp.Meta)
