@@ -30,7 +30,13 @@ func CertificateMiddleware(h gemini.Handler) gemini.Handler {
 	return gemini.HandlerFunc(func(ctx context.Context, w gemini.ResponseWriter, r *gemini.Request) {
 		certs := r.TLS().PeerCertificates
 		if len(certs) == 0 {
-			w.WriteHeader(60, "A client certificate is required to use this service")
+			user := UserContext{
+				Certificate: nil,
+				Hash:        "empty20ceb2df1484eb936da53593733eb9aba167023657159390edff41caf07",
+				NewUser:     false,
+			}
+			h.ServeGemini(context.WithValue(ctx, userCtxKey, &user), w, r)
+			//w.WriteHeader(60, "A client certificate is required to use this service")
 			return
 		}
 		if len(certs) != 1 {
